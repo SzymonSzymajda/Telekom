@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 #include <cstdlib>
 
 using namespace std;
@@ -15,14 +16,6 @@ bool isZero(vector< vector<int> >&, vector<int>&, vector<int>&, int&, int&);
 bool correct1(vector< vector<int> >&, vector<int>&, vector<int>&, int&, int&);
 bool correct2(vector< vector<int> >&, vector<int>&, vector<int>&, int&, int&);
 
-/*
-H[][]       - matrix    kontrolna
-T[]         - word1      wiadomosc nadana
-E[]         - error     bledy
-R[]=T+E                 wiadomosc odebrana
-HR = HE                 spr wiadomosci odebranej
-*/
-
 int main()
 {
     cout << "- - S T A R T - -";
@@ -31,7 +24,7 @@ int main()
     int rows, cols;
     vector< vector<int> > matrix;
     load_matrix(matrix, rows, cols);
-    cout << '\n' << rows << " x " << cols << endl;
+    cout << rows << " x " << cols << endl;
 
     int pBits = cols - rows;
     int word0[cols];
@@ -53,7 +46,7 @@ int main()
 
 //wyswietl zakodowane slowo
     cout << "Zakodowane slowo:       ";
-    for (int i = 0; i < cols; i++)
+    for (int i=0; i<cols; i++)
         cout << word0[i] << " ";
 
 // wczytaj zakodowane slowo
@@ -73,7 +66,7 @@ int main()
         cout << "\nSlowo jest poprawne";
         return 0;
     }
-    cout << "\nSlowo jest niepoprawne"
+    cout << "Slowo jest niepoprawne"
          << "\nPoprawiam:              ";
 
 // popraw slowo jesli niepoprawne
@@ -102,7 +95,11 @@ int main()
 void load_matrix(vector< vector<int> >& matrix, int& rows, int& cols)
 {
     ifstream fin;
-    fin.open("dane1.txt");
+    string filename;
+    filename = "dane1.txt";
+    //cout << "\nNazwa pliku:\t";
+    //getline(cin, filename);
+    fin.open(filename.c_str());
     if(!fin)
     {
         cout << "\nNie mozna otworzyc pliku. To koniec";
@@ -143,7 +140,6 @@ bool isZero(vector< vector<int> >& matrix, vector<int>& word1, vector<int>& erro
 bool correct1(vector< vector<int> >& matrix, vector<int>& word1, vector<int>& error, int& cols, int& rows)
 {
     for(int j=0; j<cols; j++)
-    {
         for(int i=0; i<rows; i++)
         {
             if(error[i] != matrix[i][j])
@@ -155,7 +151,6 @@ bool correct1(vector< vector<int> >& matrix, vector<int>& word1, vector<int>& er
                 return true;
             }
         }
-    }
     return false;
 }
 
