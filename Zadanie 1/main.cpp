@@ -10,7 +10,6 @@ using namespace std;
 //wczytanie slowa
 //sprawdznie poprawnosci
 
-
 void load_matrix(vector< vector<int> >&, int&, int&);
 bool isZero(vector< vector<int> >&, vector<int>&, vector<int>&, int&, int&);
 bool correct1(vector< vector<int> >&, vector<int>&, vector<int>&, int&, int&);
@@ -34,39 +33,37 @@ int main()
     load_matrix(matrix, rows, cols);
     cout << '\n' << rows << " x " << cols << endl;
 
+    int pBits = cols - rows;
     int word0[cols];
-    for (int i = 0; i < cols; i++) {
-    word0[i] = 0;
-    }
-    int pBits = cols-rows;
-//wczytaj slowo
-    cout << "\nWpisz slowo:\n";
+    for (int i=0; i<cols; i++)
+        word0[i] = 0;
+
+//wczytaj slowo 8bit
+    cout << "\nWpisz slowo:            ";
     for (int i=0; i<pBits; i++)
         cin >> word0[i];
-    cout << endl;
 
 //zakoduj slowo
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < pBits; j++) {
+    for (int i=0; i<rows; i++)
+    {
+        for (int j=0; j<pBits; j++)
             word0[pBits+i] += word0[j] * matrix[i][j];
-        }
         word0[pBits+i] %= 2;
     }
+
 //wyswietl zakodowane slowo
-    cout << "\nZakodowane slowo:       ";
-    for (int i = 0; i < cols; i++) {
+    cout << "Zakodowane slowo:       ";
+    for (int i = 0; i < cols; i++)
         cout << word0[i] << " ";
-    }
 
 // wczytaj zakodowane slowo
-    cout << "\nPodaj zakodowane slowo: ";
+    cout << "\n\nPodaj zakodowane slowo: ";
     vector<int> word1;
     for (int i=0, tmp; i<cols; i++)
     {
         cin >> tmp;
         word1.push_back(tmp);
     }
-    cout << endl;
 
 // wektor bledow
     vector<int> error;
@@ -77,26 +74,24 @@ int main()
         return 0;
     }
     cout << "\nSlowo jest niepoprawne"
-         << "\n                        ";
+         << "\nPoprawiam:              ";
 
 // popraw slowo jesli niepoprawne
     if( correct1(matrix, word1, error, cols, rows) )
     {
         for (int i=0; i<cols; i++)
-        {
-            cout<<word1[i]<<" ";
-        }
+            cout << word1[i] << " ";
+        cout << endl;
     }
     else if( correct2(matrix, word1, error, cols, rows) )
     {
         for (int i=0; i<cols; i++)
-        {
-            cout<<word1[i]<<" ";
-        }
+            cout << word1[i] << " ";
+        cout << endl;
     }
     else
     {
-        cout << "\nZa duzo bledow\n";
+        cout << "Za duzo bledow\n";
     }
 
     cout << "\n- - -S T O P- - -";
