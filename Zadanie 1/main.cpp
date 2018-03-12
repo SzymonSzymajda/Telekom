@@ -1,9 +1,7 @@
 #include <iostream>     // cout, cin
 #include <fstream>      // ifstream
 #include <vector>       // vector
-#include <string>       // string
-#include <cstdlib>      // exit
-#include <cstdio>       // getchar
+#include <algorithm>    // remove
 
 using namespace std;
 
@@ -17,10 +15,11 @@ bool isZero     (const vector< vector<int> >, const vector<int>, vector<int>&, c
 bool correct1   (const vector< vector<int> >, vector<int>&, const vector<int>, const int, const int);  // poprawa 1 bitu
 bool correct2   (const vector< vector<int> >, vector<int>&, const vector<int>, const int, const int);  // poprawa 2 bitow
 void printWord  (const vector<int>, const int);
+void load_word  (vector<int>&, const int);
 
 int main()
 {
-    cout << "- - S T A R T - -";
+    cout << "- - S T A R T - -\n";
 
 // wczytanie matrixa i jego rozmiarow
     int rows, cols;
@@ -29,18 +28,17 @@ int main()
     load_matrix(matrix, rows, cols);
     cout << "macierz " << rows << " x " << cols << endl;
 
-    int pBits = cols - rows;
-    int word0[cols];
-
 // wczytaj slowo surowe
+    int pBits = cols - rows;
+    vector<int> word0(cols);
+
     cout << "\nWpisz slowo:            ";
-    for(int i=0; i<pBits; i++)
-        cin >> word0[i];
+    load_word(word0, pBits);
 
 // zakoduj slowo - dopisz bity parzystosci
     for(int i=0; i<rows; i++)
     {
-        word0[pBits+i] = 0; // wyzerowanie niezainicjalizowanych pol tablicy
+        word0[pBits+i] = 0; // wyzerowanie niezainicjalizowanych pol wektora
         for (int j=0; j<pBits; j++)
             word0[pBits+i] += word0[j] * matrix[i][j];
         word0[pBits+i] %= 2;
@@ -48,18 +46,13 @@ int main()
 
 // wyswietl zakodowane slowo
     cout << "Zakodowane slowo:       ";
-    for (int i=0; i<cols; i++)
-        cout << word0[i] << " ";
+    printWord(word0, cols);
 
 // wczytaj zakodowane slowo (z bitami parzystosci)
-    vector<int> word1;
+    vector<int> word1(cols);
 
-    cout << "\n\nPodaj zakodowane slowo: ";
-    for (int i=0, tmp; i<cols; i++)
-    {
-        cin >> tmp;
-        word1.push_back(tmp);
-    }
+    cout << "\nPodaj zakodowane slowo: ";
+    load_word(word1, cols);
 
 // wektor bledow
     vector<int> error;
@@ -79,6 +72,7 @@ int main()
     else                                                   cout << "Za duzo bledow\n";
 
     cout << "\n- - -S T O P- - -";
+    getchar();
     return 0;
 }
 
@@ -86,9 +80,9 @@ void load_matrix(vector< vector<int> >& matrix, int& rows, int& cols)
 {
     ifstream fin;
     string filename;
-    filename = "dane1.txt";
-    //cout << "\nNazwa pliku:\t";
-    //getline(cin, filename);
+    //filename = "dane1.txt";
+    cout << "\nNazwa pliku:\t";
+    getline(cin, filename);
     fin.open(filename.c_str());
     if(!fin)
     {
@@ -147,7 +141,7 @@ bool correct1(const vector< vector<int> > matrix, vector<int>& word1, const vect
 bool correct2(const vector< vector<int> > matrix, vector<int>& word1, const vector<int> error, const int cols, const int rows)
 {
     vector<int> temp(rows);
-    for(int i=0; i<cols; i++)
+    for(int i=0; i<cols-1; i++)
         for(int j=i+1; j<cols; j++)
             for(int k=0; k<rows; k++)
             {
@@ -166,9 +160,27 @@ bool correct2(const vector< vector<int> > matrix, vector<int>& word1, const vect
     return false;
 }
 
-void printWord(const vector<int> word1, const int cols)
+void printWord(const vector<int> word, const int cols)
 {
     for (int i=0; i<cols; i++)
-        cout << word1[i] << " ";
+        cout << word[i] << " ";
     cout << endl;
+}
+
+void load_word(vector<int>& word, const int pBits)
+{
+    string sword0;
+    getline(cin, sword0);
+
+    sword0.erase(remove(sword0.begin(), sword0.end(), ' '), sword0.end()); // usuwamy wszystkie spacje ze stringa
+
+    for(int i=0; i<pBits; i++)
+        if(sword0[i] == '0' || sword0[i] == '1')
+            word[i] = sword0[i]-'0';
+        else
+        {
+            cout << "\nNierozpoznawany znak. To koniec";
+            getchar();
+            exit(2);
+        }
 }
