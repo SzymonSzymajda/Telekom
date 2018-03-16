@@ -1,14 +1,16 @@
 #include <iostream>     // cout, cin
 #include <fstream>      // ifstream
 #include <vector>       // vector
-#include <algorithm>    // remove
+#include <algorithm>    // remove, reverse
 
 using namespace std;
 
-//wczytywanie macierzy
-//kodowanie slowa
-//wczytanie slowa
-//sprawdznie poprawnosci
+//wczytujemy plik z wiadomoscia
+//dzielimy wiadomosc na 8bitowe lancuchy i kodujemy kazdy z nich
+//zapisujemy je do pliku
+//tutaj czas na wprowadzenie bledow do pliku
+//odczytujemy plik z zakodowanymi lancuchami
+//odkodowujemy je, poprawiamy bledy i sklejamy wszystkie w jedna wiadomosc
 
 void load_matrix(vector< vector<int> >&, int&, int&);
 bool isZero     (const vector< vector<int> >, const vector<int>, vector<int>&, const int, const int);  // spr czy wektor bledow jest zerowy
@@ -16,21 +18,19 @@ bool correct1   (const vector< vector<int> >, vector<int>&, const vector<int>, c
 bool correct2   (const vector< vector<int> >, vector<int>&, const vector<int>, const int, const int);  // poprawa 2 bitow
 void printWord  (const vector<int>, const int);
 void load_word  (vector<int>&, const int);
-
-vector<int> encode(const vector< vector<int> > matrix, const vector<int> msg, const int rows, const int cols);
-vector<int> read_from_file(ifstream& input);
-void write_to_file(vector<int> msg, ofstream &output);
+vector<int> read_file  (ifstream& input);
+void        write_file (const vector<int> msg, ofstream &output);
+vector<int> encode     (const vector< vector<int> > matrix, const vector<int> msg, const int rows, const int cols);
+//vector<int> decode     ();
 
 int main()
 {
-//wczytujemy macierz z pliku
-    //dzielimy wiadomosc na 8 bitowe fragmenty
-    //kodujemy każdy fragement i zapisujemy do pliku
+// wczytujemy macierz z pliku
     vector< vector<int> > matrix;
     int rows, cols;
     load_matrix(matrix, rows, cols);
 
-//wczytujemy wiadomosc z pliku
+// wczytujemy wiadomosc z pliku
     ifstream input;
     ofstream output;
     input.open("wiadomosc.txt");
@@ -42,30 +42,17 @@ int main()
         exit(3);
     }
 
-    vector<int> message = read_from_file(input);
+    vector<int> message = read_file(input);
     input.close();
 
-/**/
-cout << '\n';
-for(unsigned int i=0; i<message.size(); i++)
-    cout << message[i] << ' ';
-cout << endl;
-/**/
+    cout << "\nWczytana wiadomosc:         ";
+    printWord( message, message.size() );
 
-    vector<int> msg(8);
-    for(size_t i=0; i<message.size(); i++)
+// dzielimy wiadomosc na 8 bitowe fragmenty, kodujemy każdy fragement i zapisujemy do pliku
+    for(unsigned int i=0; i<message.size(); i+=8)
     {
-        for(size_t j=0; j<8; j++)
-        {
-            msg[j] = message[i];
-        }
-        write_to_file(encode(matrix, msg, rows, cols), output);
-    }
-
-    vector<int> tmp = encode(matrix, message, rows, cols);
-    for(unsigned int i=0; i<tmp.size(); i++)
-    {
-        cout << tmp[i] << ' ';
+        vector<int> msg8bit(message.begin()+i, message.begin()+i+8);
+        write_file( encode(matrix, msg8bit, rows, cols), output );
     }
 
     output.close();
@@ -159,7 +146,7 @@ bool correct2(const vector< vector<int> > matrix, vector<int>& word1, const vect
 void printWord(const vector<int> word, const int cols)
 {
     for (int i=0; i<cols; i++)
-        cout << word[i] << " ";
+        cout << word[i] << ' ';
     cout << endl;
 }
 
@@ -190,15 +177,13 @@ vector<int> encode(const vector< vector<int> > matrix, const vector<int> msg, co
     {
         temp.push_back(0);
         for (int j=0; j<pBits; j++)
-        {
-            temp[pBits+i] = temp[j] * matrix[i][j];
-        }
-        temp[pBits+1] %= 2;
+            temp[pBits+i] += temp[j] * matrix[i][j];
+        temp[pBits+i] %= 2;
     }
     return temp;
 }
 
-vector<int> read_from_file(ifstream& input)
+vector<int> read_file(ifstream& input)
 {
     vector<int> msg;
 
@@ -206,15 +191,23 @@ vector<int> read_from_file(ifstream& input)
 
     if(msg.size()%8 != 0)
     {
-        reverse(msg.begin(), msg.end()); // odwrocenie wektora zeby w ostatecznym efekcie pushowac na poczatek wektora
+        reverse(msg.begin(), msg.end()); // odwrocenie wektora zeby w koncowym efekcie pushowac na poczatek wektora
         for(unsigned int i=0; i<msg.size()%8; i++) // dobijamy zera do pelnego bajtu
             msg.push_back(0);
         reverse(msg.begin(), msg.end());
     }
+
+    if(msg.size()%8 != 0)
+    {
+        cout << "\nDobijanie nie powiodlo sie";
+        getchar();
+        exit(5);
+    }
+
     return msg;
 }
 
-void write_to_file(vector<int> msg, ofstream& output)
+void write_file(vector<int> msg, ofstream& output)
 {
     for(unsigned int i=0; i<msg.size(); i++)
         output << msg[i] << ' ';
