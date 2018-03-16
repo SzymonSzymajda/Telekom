@@ -21,7 +21,7 @@ void load_word  (vector<int>&, const int);
 vector<int> read_file  (ifstream& input);
 void        write_file (const vector<int> msg, ofstream &output);
 vector<int> encode     (const vector< vector<int> > matrix, const vector<int> msg, const int rows, const int cols);
-//vector<int> decode     ();
+vector<int> decode     (const vector< vector<int> >, const int, const int);
 
 int main()
 {
@@ -56,6 +56,13 @@ int main()
     }
 
     output.close();
+
+// cyk dwojeczka
+    cout << "\nWcisnij [Enter] aby zdekodowac...\n"; // oczekiwanie na wprowadzenie bledow
+    getchar();
+    decode(matrix, rows, cols);
+
+    cout << "\n- - -S T O P- - -";
     return 0;
 }
 
@@ -168,21 +175,6 @@ void load_word(vector<int>& word, const int pBits)
         }
 }
 
-vector<int> encode(const vector< vector<int> > matrix, const vector<int> msg, const int rows, const int cols)
-{
-    int pBits = cols - rows;
-    vector<int> temp = msg;
-
-    for(int i=0; i<rows; i++)
-    {
-        temp.push_back(0);
-        for (int j=0; j<pBits; j++)
-            temp[pBits+i] += temp[j] * matrix[i][j];
-        temp[pBits+i] %= 2;
-    }
-    return temp;
-}
-
 vector<int> read_file(ifstream& input)
 {
     vector<int> msg;
@@ -212,4 +204,72 @@ void write_file(vector<int> msg, ofstream& output)
     for(unsigned int i=0; i<msg.size(); i++)
         output << msg[i] << ' ';
     output << endl;
+}
+
+vector<int> encode(const vector< vector<int> > matrix, const vector<int> msg, const int rows, const int cols)
+{
+    int pBits = cols - rows;
+    vector<int> temp = msg;
+
+    for(int i=0; i<rows; i++)
+    {
+        temp.push_back(0);
+        for (int j=0; j<pBits; j++)
+            temp[pBits+i] += temp[j] * matrix[i][j];
+        temp[pBits+i] %= 2;
+    }
+    return temp;
+}
+
+vector<int> decode(const vector< vector<int> > matrix, const int rows, const int cols)
+{
+    //int pBits = cols - rows;
+    vector<int> temp;  // z bitami parzystosci - do sprawdzenia i korekty bledow
+    vector<int> temp2; // bez bitow parzystosci - do wypisania do pliku
+
+    ifstream ifs;
+    ofstream ofs;
+    ifs.open("zakodowane.txt");
+    ofs.open("wiadomosc2.txt");
+    if(!ifs || !ofs)
+    {
+        cout << "\nNie mozna otworzyc pliku. To koniec";
+        getchar();
+        exit(6);
+    }
+
+    // wczytanie z pliku do wektorow
+    for(string spom = ""; getline(ifs, spom); )
+    {
+        spom.erase(remove(spom.begin(), spom.end(), ' '), spom.end()); // usuwamy spacje
+        string spom2 = spom;
+        spom2.erase(spom2.end()-rows, spom2.end()); // usuwamy bity parzystosci
+
+        for(unsigned int i=0; i<spom.size(); i++)
+            temp.push_back( spom[i]-'0' );
+        for(unsigned int i=0; i<spom2.size(); i++)
+            temp2.push_back( spom2[i]-'0' );
+    }
+
+    // korekcja bledow
+    // TODO
+
+    // wypisanie do pliku
+    bool ignore0 = true; // ignorujemy wiodace zera
+    for(unsigned int i=0; i<temp2.size(); i++)
+    {
+        if(ignore0 == false)
+        {
+            ofs << temp2[i] << ' ';
+            cout << temp2[i] << ' ';
+        }
+        else if(temp[i] == 0 && temp[i+1] == 1)
+        {
+            ignore0 = false;
+        }
+    }
+
+    ofs.close();
+    ifs.close();
+    return temp;
 }
