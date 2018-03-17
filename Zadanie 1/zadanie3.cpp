@@ -100,7 +100,7 @@ bool isZero(const vector< vector<int> > matrix, const vector<int> word1, vector<
     bool isCorrect = true;
     for (int i=0; i<rows; i++)
     {
-        error.push_back(0);
+        error[i] = 0;
         for (int j=0; j<cols; j++)
             error[i] += word1[j] * matrix[i][j];
         error[i] %= 2;
@@ -242,17 +242,46 @@ vector<int> decode(const vector< vector<int> > matrix, const int rows, const int
     for(string spom = ""; getline(ifs, spom); )
     {
         spom.erase(remove(spom.begin(), spom.end(), ' '), spom.end()); // usuwamy spacje
-        string spom2 = spom;
-        spom2.erase(spom2.end()-rows, spom2.end()); // usuwamy bity parzystosci
+        //string spom2 = spom;
+        //spom2.erase(spom2.end()-rows, spom2.end()); // usuwamy bity parzystosci
 
         for(unsigned int i=0; i<spom.size(); i++)
             temp.push_back( spom[i]-'0' );
-        for(unsigned int i=0; i<spom2.size(); i++)
-            temp2.push_back( spom2[i]-'0' );
+        /*for(unsigned int i=0; i<spom2.size(); i++) //to wywalic
+            temp2.push_back( spom2[i]-'0' );*/
     }
 
     // korekcja bledow
-    // TODO
+    vector<int> buff(cols);
+    vector<int> error(rows);
+    for (unsigned int i = 0; i < temp.size(); i++)
+    {
+        buff[i%cols] = temp[i];
+        if( i%cols == (unsigned int)(cols-1) ) // cols-1 bo indeksy ida od 0
+        {
+            if(!isZero(matrix, buff, error, rows, cols))
+            {
+                if(correct1(matrix, buff, error, cols, rows))
+                {
+                    //tutaj dac for i robic temp2.push_back(buff[j])
+                    for (int j = 0; j < cols - rows; j++)
+                    {
+                        temp2.push_back(buff[j]);
+                    }
+                }
+                else if(correct2(matrix, buff, error, cols, rows))
+                {
+                    for (int j = 0; j < cols - rows; j++)
+                    {
+                        temp2.push_back(buff[j]);
+                    }
+                }
+            }
+        }
+    }
+    // no i chyba to bedzie tak
+    // zbieram sie i wracam do lodzi, robie commita i jak chcesz to dokoncz
+    // bo w brzezinach jestem
 
     // wypisanie do pliku
     bool ignore0 = true; // ignorujemy wiodace zera
