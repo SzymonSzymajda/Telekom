@@ -17,11 +17,10 @@ bool isZero     (const vector< vector<int> >, const vector<int>, vector<int>&, c
 bool correct1   (const vector< vector<int> >, vector<int>&, const vector<int>, const int, const int);  // poprawa 1 bitu
 bool correct2   (const vector< vector<int> >, vector<int>&, const vector<int>, const int, const int);  // poprawa 2 bitow
 void printWord  (const vector<int>, const int);
-void load_word  (vector<int>&, const int);
 vector<int> read_file  (ifstream& input);
 void        write_file (const vector<int> msg, ofstream &output);
-vector<int> encode     (const vector< vector<int> > matrix, const vector<int> msg, const int rows, const int cols);
-vector<int> decode     (const vector< vector<int> >, const int, const int);
+vector<int> encode     (const vector< vector<int> >, const vector<int>, const int, const int);
+void        decode     (const vector< vector<int> >, const int, const int);
 
 int main()
 {
@@ -54,15 +53,13 @@ int main()
         vector<int> msg8bit(message.begin()+i, message.begin()+i+8);
         write_file( encode(matrix, msg8bit, rows, cols), output );
     }
-
     output.close();
 
-// cyk dwojeczka
+// ponownie wczytujemy, dekodujemy, sklejamy i wypisujemy do pliku
     cout << "\nWcisnij [Enter] aby zdekodowac...\n"; // oczekiwanie na wprowadzenie bledow
     getchar();
     decode(matrix, rows, cols);
 
-    cout << "\n- - -S T O P- - -";
     return 0;
 }
 
@@ -70,9 +67,7 @@ void load_matrix(vector< vector<int> >& matrix, int& rows, int& cols)
 {
     ifstream fin;
     string filename;
-    filename = "dane.txt";
-    //cout << "\nNazwa pliku:\t";
-    //getline(cin, filename);
+    filename = "dane1.txt";
     fin.open(filename.c_str());
     if(!fin)
     {
@@ -157,24 +152,6 @@ void printWord(const vector<int> word, const int cols)
     cout << endl;
 }
 
-void load_word(vector<int>& word, const int pBits)
-{
-    string sword0;
-    getline(cin, sword0);
-
-    sword0.erase(remove(sword0.begin(), sword0.end(), ' '), sword0.end()); // usuwamy wszystkie spacje ze stringa
-
-    for(int i=0; i<pBits; i++)
-        if(sword0[i] == '0' || sword0[i] == '1')
-            word[i] = sword0[i]-'0';
-        else
-        {
-            cout << "\nNierozpoznawany znak. To koniec";
-            getchar();
-            exit(2);
-        }
-}
-
 vector<int> read_file(ifstream& input)
 {
     vector<int> msg;
@@ -221,7 +198,7 @@ vector<int> encode(const vector< vector<int> > matrix, const vector<int> msg, co
     return temp;
 }
 
-vector<int> decode(const vector< vector<int> > matrix, const int rows, const int cols)
+void decode(const vector< vector<int> > matrix, const int rows, const int cols)
 {
     vector<int> temp;  // z bitami parzystosci - do sprawdzenia i korekty bledow
     vector<int> temp2; // bez bitow parzystosci - do wypisania do pliku
@@ -256,7 +233,7 @@ vector<int> decode(const vector< vector<int> > matrix, const int rows, const int
         {
             if( !isZero(matrix, buff, error, rows, cols) )
                 if( !correct1(matrix, buff, error, cols, rows) )
-                    //if( !correct2(matrix, buff, error, cols, rows) )
+                    if( !correct2(matrix, buff, error, cols, rows) )
                         cout << "Za duzo bledow\n";
 
             for(int j=0; j<cols-rows; j++)
@@ -264,25 +241,18 @@ vector<int> decode(const vector< vector<int> > matrix, const int rows, const int
         }
     }
 
-cout << "\ntemp2  " << temp2.size() << endl;
-for(unsigned int i=0; i<temp2.size(); i++)
-    cout << temp2[i] << ' ';
-cout << "\n";
-
     // wypisanie do pliku
     bool ignore0 = true; // ignorujemy wiodace zera
+    if(temp2[0] == 1)
+        ignore0 = false;
     for(unsigned int i=0; i<temp2.size(); i++)
     {
         if( !ignore0 )
             ofs << temp2[i] << ' ';
-        else if(temp[i] == 0 && temp[i+1] == 1)
-        {
-            ofs << temp2[i] << ' ';
+        else if(temp2[i] == 0 && temp2[i+1] == 1)
             ignore0 = false;
-        }
     }
 
     ofs.close();
     ifs.close();
-    return temp;
 }

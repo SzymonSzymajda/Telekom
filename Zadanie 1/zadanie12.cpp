@@ -19,14 +19,12 @@ void load_word  (vector<int>&, const int);
 
 int main()
 {
-    cout << "- - S T A R T - -\n";
-
 // wczytanie matrixa i jego rozmiarow
     int rows, cols;
     vector< vector<int> > matrix;
 
     load_matrix(matrix, rows, cols);
-    cout << "macierz " << rows << " x " << cols << endl;
+    //cout << "macierz " << rows << " x " << cols << endl;
 
 // wczytaj slowo surowe
     int pBits = cols - rows;
@@ -71,7 +69,6 @@ int main()
     else if( correct2(matrix, word1, error, cols, rows) )  printWord(word1, cols);
     else                                                   cout << "Za duzo bledow\n";
 
-    cout << "\n- - -S T O P- - -";
     getchar();
     return 0;
 }
@@ -81,7 +78,7 @@ void load_matrix(vector< vector<int> >& matrix, int& rows, int& cols)
     ifstream fin;
     string filename;
     //filename = "dane1.txt";
-    cout << "\nNazwa pliku:\t";
+    cout << "\nNazwa pliku:            ";
     getline(cin, filename);
     fin.open(filename.c_str());
     if(!fin)
